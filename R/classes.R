@@ -7,7 +7,9 @@ setClass("DocumentPage", contains = "VIRTUAL")
  setOldClass("DocumentPage")
 }
     
-setClass("TextBoundingBox", contains = "data.frame")
+setClass("BoundingBox", contains = "data.frame")
+setClass("TextBoundingBox", contains = "BoundingBox")
+setClass("ShapeBoundingBox", contains = "BoundingBox")
 
 
 setGeneric("getTextBBox",

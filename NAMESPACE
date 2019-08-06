@@ -1,4 +1,6 @@
 exportClasses("Document", "DocumentPage")
+exportClasses("BoundingBox", "TextBoundingBox", "ShapeBoundingBox")
+
 export(getNumPages, getTextBBox, getPages)
 
 exportMethods(getNumPages)
