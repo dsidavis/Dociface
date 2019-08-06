@@ -1,0 +1,12 @@
+Package: Dociface
+Version: 0.1-0
+Title: Virtual package for classes and generics for working with Documents
+Description: In this package, Documents are considered one or multi-page containers for text
+  and we are primarily focusing on PDF and scanned (OCR'ed) documents. We don't exclude
+  Word, OpenOffice, Pages and other forms of word processing documents, or diagrams
+  or even spreadsheets (although these have much richer structure).
+Author: Duncan Temple Lang, Matt Espe, Jane Carlen
+Maintainer: <dtemplelang@ucdavis.edu>
+Imports: methods
+License: BSD+License
+

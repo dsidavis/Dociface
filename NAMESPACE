@@ -1,0 +1,4 @@
+exportClasses("Document", "DocumentPage")
+export(getNumPages, getTextBBox, getPages)
+
+exportMethods(getNumPages)
