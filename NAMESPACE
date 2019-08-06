@@ -2,3 +2,16 @@ exportClasses("Document", "DocumentPage")
 export(getNumPages, getTextBBox, getPages)
 
 exportMethods(getNumPages)
+
+
+S3method(dim, Document)
+
+export(margins)
+exportMethods(margins)
+
+if(FALSE) {
+S3method(margins, DocumentPage)
+S3method(margins, Document)
+S3method(margins, TextBoundingBox)
+}
+
