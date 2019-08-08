@@ -24,7 +24,11 @@ exportMethods("plot")
 
 
 export(getTextColors)
+exportMethods(getTextColors)
 
+export(getTextBBox, getShapesBBox)
+S3method(getTextBBox, Document)
+S3method(getShapesBBox, Document)
 
 S3method(dim, Document)
 export(getPageHeight, getPageWidth)
