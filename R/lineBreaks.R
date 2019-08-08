@@ -33,10 +33,10 @@ function(bbox, bw = 3, minInRun = 3, minDelta = 0, asPositions = TRUE)
       # the change is > minDelta and also that the run has at least minInRun
     grps = split(dens$x, g)
     w = runs$values & runs$length >= minInRun
-    starts = sapply(grps[w], min)
+    starts = unname(sapply(grps[w], min))
 
     if(asPositions)
         starts
     else 
-        split(bbox, cut(bottom(bbox), starts))
+        split(bbox, cut(bottom(bbox), c(starts, Inf)))
 }
