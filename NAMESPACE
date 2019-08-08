@@ -6,7 +6,6 @@ export(getNumPages, getTextBBox, getPages)
 exportMethods(getNumPages)
 
 
-S3method(dim, Document)
 
 export(margins)
 exportMethods(margins)
@@ -16,6 +15,21 @@ exportMethods(left, right, top, bottom)
 
 
 export(findLineBreaks)
+
+
+export(getTextByCols)
+exportMethods(getTextByCols)
+
+exportMethods("plot")
+
+
+export(getTextColors)
+
+
+S3method(dim, Document)
+export(getPageHeight, getPageWidth)
+S3method(getPageHeight, DocumentPage)
+S3method(getPageWidth, DocumentPage)
 
 if(FALSE) {
 S3method(margins, DocumentPage)
