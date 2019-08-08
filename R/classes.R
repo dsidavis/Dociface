@@ -34,7 +34,14 @@ setMethod("getNumPages", "Document",
             length(getPages(doc)))
 
 
-
+setAs("Document", "TextBoundingBox",
+      function(from) {
+          pgs = getPages(from)
+          tmp = lapply(pgs, as, "TextBoundingBox")
+          ans = do.call(rbind, tmp)
+          ans$page = rep(seq(along = pgs), sapply(tmp, nrow))
+          ans
+      })
 
 if(TRUE) {
 setGeneric("margins",
@@ -68,7 +75,8 @@ margins.DocumentPage <- function(obj, asDataFrame = TRUE, ...)        {
 
 setMethod("margins", "TextBoundingBox",
 function(obj, asDataFrame = TRUE, ...) {
-         c(left = min(obj$left), right = max(obj$left + obj$width))
+    #  c(left = min(obj$left), right = max(obj$left + obj$width))
+       c(left = min(left(obj)), right = max(right(obj)))
      })
 } else {
 
@@ -108,11 +116,17 @@ margins.TextBoundingBox =
 }
 
 
-
-
 setGeneric("left", function(x, ...) standardGeneric("left"))
-setGeneric("right", function(x, ...) standardGeneric("left"))
-setMethod("left", "TextBoundingBox", function(x, ...) x$x)
+setGeneric("right", function(x, ...) standardGeneric("right"))
+setGeneric("top", function(x, ...) standardGeneric("top"))
+setGeneric("bottom", function(x, ...) standardGeneric("bottom"))
+setGeneric("width", function(x, ...) standardGeneric("width"))
+setGeneric("height", function(x, ...) standardGeneric("height"))
+
+# General as it works for OCR and PDF
+setMethod("left", "TextBoundingBox", function(x, ...) x$left)
+setMethod("top", "TextBoundingBox", function(x, ...) x$top)
+
 
 
 if(FALSE) {
@@ -122,26 +136,19 @@ if(FALSE) {
 setMethod("right", "PDFTextBoundingBox", function(x, ...) x$y1)
 # In Rtesseract
 setMethod("right", "OCRTextBoundingBox", function(x, ...) x$x + x$width)
+setMethod("right", "OCRTextBoundingBox", function(x, ...) x$x + x$width)
 
 
-setAs("OCRPage", "TextBoundingBox",
-         function(from) {
-              GetBoxes(from)
-          })
-
-
-
-setAs("PDFToXMLPage", "TextBoundingBox",
-         function(from) {
-             getTextBBox(from, asDataFrame = TRUE)
-             # getBBox2(from, asDataFrame = TRUE)
-          })
 }
 
 
 dim.Document =
 function(x)
   t(sapply(getPages(x), dim))
+
+
+
+
 
 # Validity
 # 

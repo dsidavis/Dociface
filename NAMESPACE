@@ -11,6 +11,12 @@ S3method(dim, Document)
 export(margins)
 exportMethods(margins)
 
+export(left, right, top, bottom, width, height)
+exportMethods(left, right, top, bottom)
+
+
+export(findLineBreaks)
+
 if(FALSE) {
 S3method(margins, DocumentPage)
 S3method(margins, Document)
