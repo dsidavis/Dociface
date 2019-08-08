@@ -1,5 +1,6 @@
-
+library(Dociface)
 if(require(ReadPDF)) {
+
 
 d = readPDFXML("SamplePDFs/Amada-2013.xml")
 
