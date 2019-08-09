@@ -8,6 +8,7 @@
 
 # Used to have
 #    txtNodes = getNodeSet(p, getXPathDocFontQuery(p, docFont)),
+# in the signature.
 
 setGeneric("getTextByCols",
 
@@ -51,7 +52,7 @@ setMethod("getTextByCols", "TextBoundingBox",
     
     
     if(asNodes) {
-        ans = split(txtNodes, cut(lenft(bb), c(0, breaks[-1], Inf)))
+        ans = split(txtNodes, cut(left(bb), c(0, breaks[-1], Inf)))
         if(order)
             ans = lapply(ans, function(x) unlist(orderByLine(x)))
         ans
