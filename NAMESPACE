@@ -14,11 +14,13 @@ export(left, right, top, bottom, width, height)
 exportMethods(left, right, top, bottom)
 
 
-export(findLineBreaks)
-
+export(findLineBreaks, getTextLines)
 
 export(getTextByCols)
 exportMethods(getTextByCols)
+export(getColPositions)
+S3method(getColPositions, Document)
+S3method(getColPositions, DocumentPage)
 
 exportMethods("plot")
 
