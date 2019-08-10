@@ -5,29 +5,46 @@ function(obj, asDataFrame = TRUE, attrs = c("left", "top", if(rotation) "rotatio
 
 getShapesBBox = 
     #
-    # This bbox function expects an attribute named bbox
-    # This is for rect and line nodes, not <text> nodes. Use getBBox2() for that.
-    # Here asDataFrame is TRUE. For getBBox() it is FALSE for backward-compatability.
+    # This is for rect and line nodes, not <text> nodes. Use getTextBBox() (or previously getBBox2() in ReadPDF) for that.
+    # Here asDataFrame is TRUE. For getBBox() in ReadPDF, it is FALSE for backward-compatability.
 function(obj, asDataFrame = TRUE, color = TRUE, diffs = FALSE, dropCropMarks = TRUE, ...)
     #??? Do we have to make an explicit call to getBBox() and pass the arguments or will UseMethod do the right thing.
+    # This comment is left over from the ReadPDF implementation when we called getBBox().
   UseMethod("getShapesBBox")
 
 
 
+# Coercion methods from a general Document object to different BoundingBox target classes.
 setAs("Document", "TextBoundingBox",
-      function(from) {
+      function(from) 
          getTextBBox(from, asDataFrame = TRUE)
-#        pgs = getPages(from)
-#        tmp = lapply(pgs, as, "TextBoundingBox")
-#        ans = do.call(rbind, tmp)
-#        ans$page = rep(seq(along = pgs), sapply(tmp, nrow))
-#        ans
-      })
+     )
 
 setAs("Document", "ShapeBoundingBox",
       function(from) {
-         getTextBBox(from, asDataFrame = TRUE)
+         getShapesBBox(from, asDataFrame = TRUE)
      })
+
+
+bboxForDoc =
+    # General function for processing each page object, calling the pageFun specified by the
+    #  caller, typically getTextBBox or getShapesBBox
+    # resulting in a list of data frames, hopefully BoundingBox objects. Then combine them into one MultiPageBoundingBox
+    # if asked to do so.
+    # We can use this for applying any function to a collection of pages and do this to implement getTextBBox and getShapesBBox
+    # methods for Document objects with one piece of code.
+function(pageFun, pages, asDataFrame = FALSE, combinePages = asDataFrame, ...)
+{
+    ans = lapply(pages, pageFun, asDataFrame, ...)
+    if(combinePages) {
+        tmp = do.call(rbind, ans)
+        tmp$page = rep(seq(along = ans), sapply(ans, function(x) if(is.null(x)) 0L else nrow(x)))
+          # Put a label (bless) on the object to indicate it is not a regular TextBoundingBox but multi-page.
+        class(tmp) = c("MultiPageBoundingBox", class(ans[[1]]))
+        tmp
+    } else
+        ans
+}
 
 getTextBBox.Document =
 function(obj, asDataFrame = TRUE, color = TRUE, diffs = FALSE, dropCropMarks = TRUE, ...)    
@@ -36,17 +53,3 @@ function(obj, asDataFrame = TRUE, color = TRUE, diffs = FALSE, dropCropMarks = T
 getShapesBBox.Document =
 function(obj, asDataFrame = TRUE, color = TRUE, diffs = FALSE, dropCropMarks = TRUE, ...)    
     bboxForDoc(getShapesBBox, getPages(obj), asDataFrame, color = color, diffs = diffs, dropCropMarks = dropCropMarks, ...)
-
-
-bboxForDoc =
-function(pageFun, nodes, asDataFrame = FALSE, combinePages = asDataFrame, ...)
-{    
-    ans = lapply(nodes, pageFun, asDataFrame, ...)
-    if(combinePages) {
-        tmp = do.call(rbind, ans)
-        tmp$page = rep(seq(along = ans), sapply(ans, function(x) if(is.null(x)) 0L else nrow(x)))
-        class(tmp) = c("MultiPageBoundingBox", class(ans[[1]]))
-        tmp
-    } else
-       ans
-}

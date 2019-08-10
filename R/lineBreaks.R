@@ -45,7 +45,6 @@ function(bbox, bw = 3, minInRun = 3, minDelta = 0, asPositions = TRUE)
 getTextLines =
 function(bbox, breaks = findLineBreaks(bbox))
 {
-
     ll = split(bbox, cut(bottom(bbox), c(0, breaks, Inf)))
     ll = ll[ sapply(ll, nrow) > 0 ]
 }

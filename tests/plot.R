@@ -5,13 +5,14 @@ if(require(ReadPDF)) {
  doc = readPDFXML(list.files("SamplePDFs", pattern = "Amada-2013.xml", full = TRUE))
  plot(doc[[1]])
  plot(doc)
-
+ plot(doc[[1]], colors = "red")
+ plot(doc[[1]], colors = c("red", "green"))
 
     # MultiPageBoundingBox and plot() method.
-    doc = readPDFXML("SamplePDFs/Amada-2013.xml")
-    bb = getTextBBox(doc, asDataFrame = TRUE, combinePages = TRUE)
-    class(bb)
-    plot(bb)
+ doc = readPDFXML("SamplePDFs/Amada-2013.xml")
+ bb = getTextBBox(doc, asDataFrame = TRUE, combinePages = TRUE)
+ class(bb)
+ plot(bb)
 }
 
 

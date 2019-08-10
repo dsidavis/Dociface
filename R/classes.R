@@ -1,3 +1,12 @@
+# Very general classes for documents and pages that are not implementation/representation-specific
+# as in Rtesseract and ReadPDF, and generics which we define here so that these other packages can
+# provide specific methods for their content and computations.
+# When we can implement a method in this package in terms of other generic functions, we provide that implementation.
+# e.g. margins() for a
+#   + Document by getting the margins for each page,
+#   + DocumentPage by converting the page to a BoundingBox and
+#   + TextBoundingBox and getting the left() and right values.
+
 
 if(FALSE) {
 setClass("Document", contains = "VIRTUAL")
@@ -34,15 +43,6 @@ setMethod("getNumPages", "Document",
             length(getPages(doc)))
 
 
-setAs("Document", "TextBoundingBox",
-      function(from) {
-          pgs = getPages(from)
-          tmp = lapply(pgs, as, "TextBoundingBox")
-          ans = do.call(rbind, tmp)
-          ans$page = rep(seq(along = pgs), sapply(tmp, nrow))
-          ans
-      })
-
 if(TRUE) {
 setGeneric("margins",
            function(obj, asDataFrame = TRUE, ...) {  # get signature correct
@@ -74,6 +74,7 @@ margins.DocumentPage <- function(obj, asDataFrame = TRUE, ...)        {
 #     })
 
 setMethod("margins", "TextBoundingBox",
+#XXX Deal with ignoring headers and footers.
 function(obj, asDataFrame = TRUE, ...) {
     #  c(left = min(obj$left), right = max(obj$left + obj$width))
        c(left = min(left(obj)), right = max(right(obj)))
@@ -131,14 +132,13 @@ setMethod("top", "TextBoundingBox", function(x, ...) x$top)
 
 if(FALSE) {
 ###############
+# Put here when talking with Jane and Matt just to illustrate how we would write package
+# specific methods for the generics we had here. This is in the relevant package.
 # Package specific code.
 # In ReadPDF,
-setMethod("right", "PDFTextBoundingBox", function(x, ...) x$y1)
+#    setMethod("right", "PDFTextBoundingBox", function(x, ...) x$y1)
 # In Rtesseract
-setMethod("right", "OCRTextBoundingBox", function(x, ...) x$x + x$width)
-setMethod("right", "OCRTextBoundingBox", function(x, ...) x$x + x$width)
-
-
+#    setMethod("right", "OCRTextBoundingBox", function(x, ...) x$x + x$width)
 }
 
 

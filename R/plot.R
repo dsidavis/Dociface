@@ -1,4 +1,9 @@
-plot.Document <- function(x, y, axes = FALSE, mar = c(1, 1, 2, 1), pages = getPages(x), ...)
+plot.Document <-
+    # method for plotting all the pages of a Document, or a (sub)set of pages
+    #
+    # Can turn off the axes and use smaller margins to maximize the area used for display
+    #
+function(x, y, axes = FALSE, mar = c(1, 1, 2, 1), pages = getPages(x), ...)
 {
     np = length(pages)  # getNumPages(x)
     r = ceiling(sqrt(np))
@@ -21,15 +26,26 @@ setMethod("plot", "Document", plot.Document)
 
 
 plot.MultiPageBoundingBox =
+    #
+    # Displays the pages of a MultiPageBoundingBox by splitting it into separate pages
+    # and rendering these.
+    #  Reuses plot.Document method, but directly, for now at least..
 function(x, y, axes = FALSE, mar = c(1, 1, 2, 1), ...)
 {
-    #  new("ProcessedDocument", split(x, x$page))
+       # Could have a new ProcessedDocument class (like ProcessedOCRDocument in Rtesseract)
+       # and then a method for plotting that which we would move from Rtesseract to here.
+       # But haven't set up the class relationships between ProcessedOCRDocument, OCRDocument and a new
+       # general ProcessedDocument.  But this would allow us to move code from Rtesseract that would
+       # work for both ReadPDF and Rtesseract.
+       #    new("ProcessedDocument", split(x, x$page))
+
+
     pages = split(x, x$page)
     pages = lapply(pages, function(x) { class(x) = setdiff(class(x), "MultiPageBoundingBox"); x})
     plot.Document(axes = axes, mar = mar, pages = pages, ...)
 }
 
-#XXX Compute colors
+# Compute colors
 # pageTitle() function and default value.
 setMethod("plot", "DocumentPage",
 function(x, y, colors = getTextColors(x), axes = FALSE, ...)
@@ -54,24 +70,23 @@ function(x, y, pageHeight = max(bottom(x)), colors = getTextColors(x), axes = FA
 })
 
 
-if(FALSE) {
-library(Dociface); library(ReadPDF)
-doc = readPDFXML(list.files("SamplePDFs", pattern = "Amada-2013.xml", full = TRUE))
-plot(doc[[1]])
-plot(doc[[1]], colors = "red")
-plot(doc[[1]], colors = c("red", "green"))
-}
-
+# Generic and method for computing colors of the text elements so we can render
+# them appropriately when plotting.
 setGeneric("getTextColors",
              function(obj, ...) 
                standardGeneric("getTextColors"))
 
-
+ # Default method is to make every text element black
+ # This means we don't have to do anything for OCRDocument objects and OCRResults which don't have color information.
 setMethod("getTextColors", "ANY",
           function(obj, ...)
                "black")
 
 
+
+# Get the PageHeight and PageWidth to use dim() and then we don't have to write methods for that.
+# Dange that dim() would get called on a BoundingBox and get the dim() of the data.frame()
+# not the conceptual page dimensions.
 
 getPageHeight =
 function(obj, ...)
