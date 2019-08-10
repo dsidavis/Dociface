@@ -1,16 +1,33 @@
-setMethod("plot", "Document",
-function(x, y, axes = FALSE, mar = c(1, 1, 2, 1), ...)
+plot.Document <- function(x, y, axes = FALSE, mar = c(1, 1, 2, 1), pages = getPages(x), ...)
 {
-    np = getNumPages(x)
+    np = length(pages)  # getNumPages(x)
     r = ceiling(sqrt(np))
     c = ceiling(np/r)
     opar = par(no.readonly = TRUE)
     on.exit(par(opar))
     par(mfrow = c(r, c))
+    
     if(!axes)
         par(mar = mar)
-    invisible(mapply(function(p, i, axes, ...) plot(p, main = paste0("Page ", i), ...), getPages(x), seq(1, np), axes, MoreArgs = list(...)))
-})
+    
+    invisible(mapply(function(p, i, axes, ...)
+                         plot(p, main = paste0("Page ", i), ...),
+                     pages, seq(along = pages), axes,
+                     MoreArgs = list(...)))
+}
+
+
+setMethod("plot", "Document", plot.Document)
+
+
+plot.MultiPageBoundingBox =
+function(x, y, axes = FALSE, mar = c(1, 1, 2, 1), ...)
+{
+    #  new("ProcessedDocument", split(x, x$page))
+    pages = split(x, x$page)
+    pages = lapply(pages, function(x) { class(x) = setdiff(class(x), "MultiPageBoundingBox"); x})
+    plot.Document(axes = axes, mar = mar, pages = pages, ...)
+}
 
 #XXX Compute colors
 # pageTitle() function and default value.

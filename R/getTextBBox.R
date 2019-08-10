@@ -39,10 +39,10 @@ function(obj, asDataFrame = TRUE, color = TRUE, diffs = FALSE, dropCropMarks = T
 
 
 bboxForDoc =
-function(pageFun, nodes, asDataFrame = FALSE, ...)
+function(pageFun, nodes, asDataFrame = FALSE, combinePages = asDataFrame, ...)
 {    
     ans = lapply(nodes, pageFun, asDataFrame, ...)
-    if(asDataFrame) {
+    if(combinePages) {
         tmp = do.call(rbind, ans)
         tmp$page = rep(seq(along = ans), sapply(ans, function(x) if(is.null(x)) 0L else nrow(x)))
         class(tmp) = c("MultiPageBoundingBox", class(ans[[1]]))

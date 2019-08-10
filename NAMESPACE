@@ -23,7 +23,7 @@ S3method(getColPositions, Document)
 S3method(getColPositions, DocumentPage)
 
 exportMethods("plot")
-
+S3method(plot, MultiPageBoundingBox)
 
 export(getTextColors)
 exportMethods(getTextColors)
