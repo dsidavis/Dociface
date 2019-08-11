@@ -1,17 +1,19 @@
 
+
+
+
+
 #  txtNodes = getNodeSet(p, getXPathDocFontQuery(p, docFont, local = local)),
 
 getColPositions =
-function(obj, threshold = .1,
-         docFont = TRUE, align = "left", local = FALSE, ...)    
+function(obj, threshold = .1,docFont = TRUE, align = "left", local = FALSE, ...)    
     UseMethod("getColPositions")
 
 getColPositions.Document =
     #
     # Do this for each page
     #
-function(obj, threshold = .1,
-         docFont = TRUE, align = "left", local = FALSE, ...)    
+function(obj, threshold = .1, docFont = TRUE, align = "left", local = FALSE, ...)    
 {
    ans = lapply(getPages(obj), getColPositions, threshold, docFont, align, local, ...)
   #??? how do we combine them to learn from other pages when some are uncertain.
@@ -21,8 +23,7 @@ function(obj, threshold = .1,
 getColPositions.DocumentPage =
     # For a Page, convert to bounding box and compute
     #
-function(obj, threshold = .1,
-         docFont = TRUE, align = "left", local = FALSE, ...)    
+function(obj, threshold = .1, docFont = TRUE, align = "left", local = FALSE, ...)    
 {
    bb = as(obj, "TextBoundingBox")
    getColPositions(bb, threshold, docFont, align, local, ...)
@@ -122,3 +123,125 @@ function(obj, threshold = .1, docFont = TRUE, align = "left", local = FALSE, ...
     
     ans    
 }
+
+
+
+
+getColPositions2 =
+    #
+    # Idea here is to check the typical place for columns, i.e. middle of the page
+    #  or at 1/3 and 2/3 of the width of the page
+    # Then we check is there a gap between the "words" (text elements) on either side
+    #
+    #  If there is a header/footer that is centered on the page (e.g. a journal name or the article title, page number)
+    #  then there will be text in the gap between 2 columns. However, that is at the top or bottom
+    #  So we can discard that.
+    #  These are headers/footers, so ideally we would remove these first. But this can be cyclical, i.e we may need to find the 
+    #  columns before we find the header and footer.
+    #
+    #  Pages also have 2 columns but a large block of text that spans those two columns, e.g., the abstract, title.
+    #  See Klempa-2003
+    #
+    # 
+function(obj, threshold = .1, docFont = TRUE, align = "left", local = FALSE, ncols = 3, pageWidth = getPageWidth(obj), ...)
+{
+
+    pos = switch(ncols, min(left(obj)), pageWidth/2, pageWidth*c(.33, .66))
+
+    sapply(pos, isTextColumn, obj, pageWidth)
+}
+
+
+findEmptyRegion =
+    #
+    #
+    #XXX Images. Amada-2003, p4.
+    #
+function(pos, bbox, lineBreaks = findLineBreaks(bbox))
+{
+    cross = left(bbox) < pos & right(bbox) > pos
+  
+browser()    
+    if(any(cross))  {
+        # XXX If the lines that cross are not at the top or bottom, this will split the page
+        # in 2. Need to correct.  See Klempa-2003, page 2
+        cbb = bbox[cross,]
+
+        br = lineBreaks
+
+        if(nrow(cbb) == 1) {
+            # so only one text element crosses the possible position
+            # find out if it is above or below the rest of the text?
+            # If it is in the middle, then it splits the page.
+            if(bottom(cbb) >= br[1])
+                vert = c(a = bottom(cbb), b = Inf)
+            else if(top(cbb) >= br[-length(br)])
+                vert = c(a = 0, b = top(cbb))
+            else { # split the page. 
+                stop("Split the page")
+             }
+        } else {
+            tmp = cbb[order(bottom(cbb)), ]
+            m = c(0, diff(bottom(tmp)))
+            i = which.max(m)
+            vert = c(a = bottom(tmp)[i-1], b = top(tmp)[i])
+        }
+    } else {
+        # so no line has text that crosses at this pos
+        # So the vertical extent for this column is all of the page.
+        cbb = bbox
+        vert = c(0, Inf)
+    }
+    
+    
+    tmp = bbox[bottom(bbox) > vert[1] & top(bbox) < vert[2], ]
+    to.left = tmp[right(tmp) <= pos, ]
+    to.right = tmp[left(tmp) >= pos, ]                
+    hor = c(left = max(right(to.left)), right = min(left(to.right)))
+
+
+    list(vertical = vert, horizontal = hor)
+}
+
+isTextColumn =
+    #
+    #  look for an empty channel/gutter at pos
+    #  determine the top and bottom of it.
+    #
+    #
+    #
+function(pos, bbox, pageWidth, minWidth = 5) # epsilon should be based on interword skip
+{
+
+    to.left = bbox[right(bbox) <= pos, ]
+    to.right = bbox[left(bbox) >= pos,]
+    browser()
+    
+
+    cross = left(bbox) < pos & right(bbox) > pos
+    if(any(cross)) {
+        cbb = bbox[cross,]
+        tmp = cbb[order(bottom(cbb)), ]
+        m = c(0, diff(bottom(tmp)))
+        i = which.max(m)
+        vert = c(a = bottom(tmp)[i-1], b = top(tmp)[i])
+
+        tmp = bbox[bottom(bbox) > vert[1] & top(bbox) < vert[2], ]
+        to.left = tmp[right(tmp) <= pos, ]
+        to.right = tmp[left(tmp) >= pos, ]                
+        hor = c(left = max(right(to.left)), right = min(left(to.right)))
+        
+        
+        w2 = isCentered(bbox[cross,], pageWidth)
+        if(!all(w2))
+            return(FALSE)
+    }
+
+    # what is it about the values that are close to our possible column
+    
+    w = (left(to.right) - pos) < minWidth
+    if(any(w)) {
+        # is this part of the header. Does it span
+    }
+}
+
