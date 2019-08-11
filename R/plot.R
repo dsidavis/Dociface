@@ -60,7 +60,8 @@ function(x, y, colors = getTextColors(x), axes = FALSE, ...)
 })
 
 setMethod("plot", "TextBoundingBox",
-function(x, y, pageHeight = max(bottom(x)), colors = getTextColors(x), axes = FALSE, ...)
+function(x, y, pageHeight = getPageHeight(x),
+          colors = getTextColors(x), axes = FALSE, ...)
 {    
     plot(1, xlim = range(c(left(x), right(x))), ylim = range(0, pageHeight), ..., xlab = "", ylab = "", axes = axes)
     if(!axes)
