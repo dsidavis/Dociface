@@ -157,11 +157,17 @@ findEmptyRegion =
     #
     #XXX Images. Amada-2003, p4.
     #
-function(pos, bbox, lineBreaks = findLineBreaks(bbox))
+function(pos, bbox, lineBreaks = findLineBreaks(bbox), range = c(0, Inf),
+         minNumChars = 3,            
+         charSize = median((right(bbox) - left(bbox))/nchar(bbox$text)),
+         minNumLines = 3, numLines = -1)
 {
-    cross = left(bbox) < pos & right(bbox) > pos
-  
-browser()    
+    # add an epsilon so that they can't be within 3 or 4  pts/units.  Get the median character size
+    delta = minNumChars/2*charSize
+    cross = left(bbox) < pos - delta  &  right(bbox) > pos + delta
+    if(length(range) == 0)
+        range = c(min(top(bbox)), max(bottom(bbox)))
+browser()  
     if(any(cross))  {
         # XXX If the lines that cross are not at the top or bottom, this will split the page
         # in 2. Need to correct.  See Klempa-2003, page 2
@@ -181,6 +187,33 @@ browser()
                 stop("Split the page")
              }
         } else {
+
+            # Check to see if the lines in cross break the page into blocks in between
+            # Get the groups by line number.
+            lineNum = seq_len(length(br))
+            cline = lineNum[ cut(bottom(cbb), c(br, Inf))]
+ll = getTextLines(bbox, br)
+#names(ll) = sapply(ll, function(x) paste(x$tex, collapse = " ")) # XXX remove when finished debugging.
+            others = setdiff(lineNum, cline)
+            g = split(others, cumsum(diff(c(0, others)) > 1))
+
+            g = g[ sapply(g, length) > minNumLines ]
+
+            if(FALSE && length(g) == 1) {
+                #???  Now same as if more than 1 so consolidate if it works.
+                tmp = bbox = do.call(rbind, ll[g[[1]]])
+                r = c(max(bottom(cbb)), range[2]) #XXX fix this - case were cross is below means we want c(range[1], min(top(cbb)))
+                return(findEmptyRegion(pos, tmp, br, range = c(), minNumChars = minNumChars, charSize = charSize, minNumLines = minNumLines))
+            } else {
+                #???
+                # Need to compute the start and end
+               tmp = lapply(g, function(idx) {
+                                  tmp = do.call(rbind, ll[idx])
+                                  findEmptyRegion(pos, tmp, br, range = c(), minNumChars = minNumChars, charSize = charSize, minNumLines = minNumLines, numLines = length(idx))
+                              })
+               return(do.call(rbind, tmp))
+            }
+            
             tmp = cbb[order(bottom(cbb)), ]
             m = c(0, diff(bottom(tmp)))
             i = which.max(m)
@@ -188,11 +221,12 @@ browser()
         }
     } else {
         # so no line has text that crosses at this pos
-        # So the vertical extent for this column is all of the page.
+        # So the vertical extent for this column is all of the original bbox  or range.
         cbb = bbox
-        vert = c(0, Inf)
+        vert = range # c(0, Inf)
     }
-    
+
+#if(numLines == -1)   browser()
     
     tmp = bbox[bottom(bbox) > vert[1] & top(bbox) < vert[2], ]
     to.left = tmp[right(tmp) <= pos, ]
@@ -200,7 +234,12 @@ browser()
     hor = c(left = max(right(to.left)), right = min(left(to.right)))
 
 
-    list(vertical = vert, horizontal = hor)
+    # list(vertical = vert, horizontal = hor)
+    data.frame(left = hor[1], top = vert[1], right = hor[2], bottom = vert[2], numLines = numLines)
+}
+
+ee = function(page, ...) {
+  findEmptyRegion(getPageWidth(page)/2, getTextBBox(page), ...)
 }
 
 isTextColumn =
