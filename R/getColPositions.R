@@ -162,17 +162,24 @@ function(pos, bbox, lineBreaks = findLineBreaks(bbox), range = c(0, Inf),
          charSize = median((right(bbox) - left(bbox))/nchar(bbox$text)),
          minNumLines = 3, numLines = -1)
 {
-    # add an epsilon so that they can't be within 3 or 4  pts/units.  Get the median character size
+
+    #??? It is possible that we have a line where the word/element boundaries don't overlap with pos exactly
+    # but the line does, e.g., 
+    #     word   word
+    #          |
+    
+      # Help to rule out text that is very, very close to pos that will indicate pos can't be a column location.
+      # So we need space for minNumChars/2 characters on either size of pos. And we have charSize to determine
+      # the size of a typical character.
     delta = minNumChars/2*charSize
     cross = left(bbox) < pos - delta  &  right(bbox) > pos + delta
-    if(length(range) == 0)
+    
+    if(length(range) == 0) # when called recursively where we have a sub-bounding box.
         range = c(min(top(bbox)), max(bottom(bbox)))
-browser()  
+    
     if(any(cross))  {
-        # XXX If the lines that cross are not at the top or bottom, this will split the page
-        # in 2. Need to correct.  See Klempa-2003, page 2
-        cbb = bbox[cross,]
 
+        cbb = bbox[cross,]
         br = lineBreaks
 
         if(nrow(cbb) == 1) {
@@ -185,57 +192,57 @@ browser()
                 vert = c(a = 0, b = top(cbb))
             else { # split the page. 
                 stop("Split the page")
-             }
+            }
+
+            if(numLines < 0) numLines = length(lineBreaks) - 1
         } else {
 
             # Check to see if the lines in cross break the page into blocks in between
             # Get the groups by line number.
             lineNum = seq_len(length(br))
             cline = lineNum[ cut(bottom(cbb), c(br, Inf))]
-ll = getTextLines(bbox, br)
-#names(ll) = sapply(ll, function(x) paste(x$tex, collapse = " ")) # XXX remove when finished debugging.
+
             others = setdiff(lineNum, cline)
             g = split(others, cumsum(diff(c(0, others)) > 1))
-
             g = g[ sapply(g, length) > minNumLines ]
 
-            if(FALSE && length(g) == 1) {
-                #???  Now same as if more than 1 so consolidate if it works.
-                tmp = bbox = do.call(rbind, ll[g[[1]]])
-                r = c(max(bottom(cbb)), range[2]) #XXX fix this - case were cross is below means we want c(range[1], min(top(cbb)))
-                return(findEmptyRegion(pos, tmp, br, range = c(), minNumChars = minNumChars, charSize = charSize, minNumLines = minNumLines))
+            if(length(g) == 0) {
+                # maybe return a data.frame() with 0 rows ?
+                stop("What to do in this case????")
             } else {
-                #???
-                # Need to compute the start and end
+                
+               ll = getTextLines(bbox, br) # break the bbox into sub-bboxes by line
+                   #for aiding debugging to see the text on the lines
+                   #  names(ll) = sapply(ll, function(x) paste(x$tex, collapse = " "))
                tmp = lapply(g, function(idx) {
                                   tmp = do.call(rbind, ll[idx])
                                   findEmptyRegion(pos, tmp, br, range = c(), minNumChars = minNumChars, charSize = charSize, minNumLines = minNumLines, numLines = length(idx))
                               })
                return(do.call(rbind, tmp))
             }
-            
+
+              # Not used currently - we either return or stop()!
             tmp = cbb[order(bottom(cbb)), ]
             m = c(0, diff(bottom(tmp)))
             i = which.max(m)
             vert = c(a = bottom(tmp)[i-1], b = top(tmp)[i])
         }
     } else {
-        # so no line has text that crosses at this pos
-        # So the vertical extent for this column is all of the original bbox  or range.
+         # so no line has text that crosses at this pos
+         # So the vertical extent for this column is all of the original bbox  or range.
         cbb = bbox
-        vert = range # c(0, Inf)
+        vert = range 
     }
 
-#if(numLines == -1)   browser()
-    
+    # So now we are determining the horizontal extent of the empty region
+    # which is the end of the nearest element on our left and the
+    # left of the nearest element to our right in the elements we are considering.
     tmp = bbox[bottom(bbox) > vert[1] & top(bbox) < vert[2], ]
     to.left = tmp[right(tmp) <= pos, ]
     to.right = tmp[left(tmp) >= pos, ]                
     hor = c(left = max(right(to.left)), right = min(left(to.right)))
 
-
-    # list(vertical = vert, horizontal = hor)
-    data.frame(left = hor[1], top = vert[1], right = hor[2], bottom = vert[2], numLines = numLines)
+    structure(data.frame(left = hor[1], top = vert[1], right = hor[2], bottom = vert[2], numLines = numLines), class = c("EmptyRegion", "BoundingBox", "data.frame"))
 }
 
 ee = function(page, ...) {
