@@ -152,6 +152,13 @@ function(obj, threshold = .1, docFont = TRUE, align = "left", local = FALSE, nco
 }
 
 
+getCharSize =
+function(bbox)
+{
+    bbox = as(bbox, "TextBoundingBox")
+    (right(bbox) - left(bbox))/nchar(bbox$text)
+}
+
 findEmptyRegion =
     #
     #
@@ -159,7 +166,7 @@ findEmptyRegion =
     #
 function(pos, bbox, lineBreaks = findLineBreaks(bbox), range = c(0, Inf),
          minNumChars = 3,            
-         charSize = median((right(bbox) - left(bbox))/nchar(bbox$text)),
+         charSize = median(getCharSize(bbox)),
          minNumLines = 3, numLines = -1)
 {
 
@@ -174,7 +181,7 @@ function(pos, bbox, lineBreaks = findLineBreaks(bbox), range = c(0, Inf),
     delta = minNumChars/2*charSize
     cross = left(bbox) < (pos - delta)  &  right(bbox) > (pos + delta)
 
-#browser()    
+browser()    
     
     if(length(range) == 0) # when called recursively where we have a sub-bounding box.
         range = c(min(top(bbox)), max(bottom(bbox)))
@@ -218,7 +225,8 @@ if(FALSE) {
             g = g[ sapply(g, length) > minNumLines ]            
 } else {
    # Alternative developed when Klempa-2003.pdf[[3]] got into an infinite loop.
-    w = sapply(ll, function(x) any( left(x) < pos - delta & right(x) > pos + delta))
+    w = sapply(ll, function(x) any( left(x) < (pos - delta) & right(x) > (pos + delta)))
+#    w2 = sapply(ll, function(x) any( (right(x) < pos & right(x) < (pos - delta)) | ( (left(x) > pos) & left(x) < (pos + delta))))
     r = rle(w)
     g = split(ll, rep(seq(along = r$values), r$lengths))[!r$values]
 

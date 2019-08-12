@@ -19,6 +19,11 @@ f = function(page, ...)
 }
 f(doc2[[2]])
 f(doc2[[3]])
+# pages 4 and 5 have images which we don't yet handle. Actually we do seem to do pretty well.
+# These both exhibit the phenomenon of including a line that "crosses" @pos but which has
+# two consecutive words that end and start around pos, but neither word actually overlaps pos.
+# As a result, we end up with a very skinny empty region that starts too high up the page (as we look at it in a plot.)
+
 f(doc2[[8]])
 f(doc2[[7]])  # 2 blocks - one in a table and the other correct in the text.
   # the first bloc isn't centered on @pos
