@@ -172,7 +172,9 @@ function(pos, bbox, lineBreaks = findLineBreaks(bbox), range = c(0, Inf),
       # So we need space for minNumChars/2 characters on either size of pos. And we have charSize to determine
       # the size of a typical character.
     delta = minNumChars/2*charSize
-    cross = left(bbox) < pos - delta  &  right(bbox) > pos + delta
+    cross = left(bbox) < (pos - delta)  &  right(bbox) > (pos + delta)
+
+#browser()    
     
     if(length(range) == 0) # when called recursively where we have a sub-bounding box.
         range = c(min(top(bbox)), max(bottom(bbox)))
@@ -198,25 +200,44 @@ function(pos, bbox, lineBreaks = findLineBreaks(bbox), range = c(0, Inf),
         } else {
 
             # Check to see if the lines in cross break the page into blocks in between
-            # Get the groups by line number.
+            # Get the groups by line number.  Or by collections of line objects????
+
+            #XXX If the number of actual lines and the number of lineBreaks  (length(lineBreaks)) is
+            # different, then things can go awry.
+
+            ll = getTextLines(bbox, br) # break the bbox into sub-bboxes by line
+                   #for aiding debugging to see the text on the lines
+                   #  names(ll) = sapply(ll, function(x) paste(x$tex, collapse = " "))
+if(FALSE) {
             lineNum = seq_len(length(br))
+               # ???? crossing lines.  This is intended to be lines that have a word that spans `pos`.
             cline = lineNum[ cut(bottom(cbb), c(br, Inf))]
 
             others = setdiff(lineNum, cline)
             g = split(others, cumsum(diff(c(0, others)) > 1))
-            g = g[ sapply(g, length) > minNumLines ]
+            g = g[ sapply(g, length) > minNumLines ]            
+} else {
+   # Alternative developed when Klempa-2003.pdf[[3]] got into an infinite loop.
+    w = sapply(ll, function(x) any( left(x) < pos - delta & right(x) > pos + delta))
+    r = rle(w)
+    g = split(ll, rep(seq(along = r$values), r$lengths))[!r$values]
 
+    g = g[ sapply(g, length) > minNumLines ]
+    g = lapply(g, function(x) do.call(rbind, x))
+}
+
+            
             if(length(g) == 0) {
                 # maybe return a data.frame() with 0 rows ?
-                stop("What to do in this case????")
+                # stop("What to do in this case????")
+                warning("If the result is not what you expect, contact us with the example document and code to reproduce")
+                z = numeric()
+                return(structure(data.frame(left = z, top = z, right = z, bottom = z, numLines = integer()), class = c("EmptyRegion", "BoundingBox", "data.frame")))
             } else {
                 
-               ll = getTextLines(bbox, br) # break the bbox into sub-bboxes by line
-                   #for aiding debugging to see the text on the lines
-                   #  names(ll) = sapply(ll, function(x) paste(x$tex, collapse = " "))
-               tmp = lapply(g, function(idx) {
-                                  tmp = do.call(rbind, ll[idx])
-                                  findEmptyRegion(pos, tmp, br, range = c(), minNumChars = minNumChars, charSize = charSize, minNumLines = minNumLines, numLines = length(idx))
+               tmp = lapply(g, function(tmp) {
+                                 # tmp = do.call(rbind, ll[idx])
+                                  findEmptyRegion(pos, tmp, br, range = c(), minNumChars = minNumChars, charSize = charSize, minNumLines = minNumLines, numLines = nrow(tmp))
                               })
                return(do.call(rbind, tmp))
             }
@@ -245,8 +266,8 @@ function(pos, bbox, lineBreaks = findLineBreaks(bbox), range = c(0, Inf),
     structure(data.frame(left = hor[1], top = vert[1], right = hor[2], bottom = vert[2], numLines = numLines), class = c("EmptyRegion", "BoundingBox", "data.frame"))
 }
 
-ee = function(page, ...) {
-  findEmptyRegion(getPageWidth(page)/2, getTextBBox(page), ...)
+ee = function(page, ncols = 2, ...) {
+  findEmptyRegion(getPageWidth(page)/ncols, getTextBBox(page), ...)
 }
 
 isTextColumn =
