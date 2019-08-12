@@ -43,8 +43,12 @@ function(bbox, bw = 3, minInRun = 3, minDelta = 0, asPositions = TRUE)
 
 
 getTextLines =
-function(bbox, breaks = findLineBreaks(bbox))
+function(bbox, breaks = findLineBreaks(bbox), drop = TRUE)
 {
+    bbox = as(bbox, "TextBoundingBox")
     ll = split(bbox, cut(bottom(bbox), c(0, breaks, Inf)))
-    ll[ sapply(ll, nrow) > 0 ]
+    if(drop)
+        ll[ sapply(ll, nrow) > 0 ]
+    else
+        ll
 }
