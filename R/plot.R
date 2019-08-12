@@ -48,7 +48,7 @@ function(x, y, axes = FALSE, mar = c(1, 1, 2, 1), ...)
 # Compute colors
 # pageTitle() function and default value.
 setMethod("plot", "DocumentPage",
-function(x, y, colors = getTextColors(x), axes = FALSE, ...)
+function(x, y, colors = getTextColors(x), axes = FALSE, shapes = getShapesBBox(x), ...)
 {
     #?? Should this be
     #   getTextBBox(x, color = TRUE)
@@ -56,18 +56,19 @@ function(x, y, colors = getTextColors(x), axes = FALSE, ...)
     #  as(x, "TextBoundingBox")
     # Or should getTextBBox() have color, rotation, pages, etc. all be TRUE.
     bb = as(x, "TextBoundingBox") # getTextBBox(x, color = TRUE)
-    plot(bb, pageHeight =  getPageHeight(x), colors = colors, axes = axes, ...)
+    plot(bb, pageHeight =  getPageHeight(x), colors = colors, axes = axes, shapes = shapes, ...)
 })
 
 setMethod("plot", "TextBoundingBox",
-function(x, y, pageHeight = getPageHeight(x),
-          colors = getTextColors(x), axes = FALSE, ...)
+function(x, y, pageHeight = getPageHeight(x), colors = getTextColors(x), axes = FALSE, shapes = NULL, ...)
 {    
     plot(1, xlim = range(c(left(x), right(x))), ylim = range(0, pageHeight), ..., xlab = "", ylab = "", axes = axes)
     if(!axes)
         box() # could do it uncoditionally.
     
     text(left(x), pageHeight - bottom(x), x$text, adj = 0, cex = .5, col = colors)
+    if(length(shapes))
+        plot(shapes, pageHeight = pageHeight)
 })
 
 
@@ -93,14 +94,28 @@ getPageHeight =
 function(obj, ...)
     UseMethod("getPageHeight")
 
-getPageHeight.DocumentPage =
-function(obj, ...)
-    dim(obj)[1]
-
 getPageWidth =
 function(obj, ...)
     UseMethod("getPageWidth")
 
+
+#XXX be careful - mixing dim() of page and dim() of data.frame.
+getPageHeight.DocumentPage =
+function(obj, ...)
+    dim(obj)[1]
+
 getPageWidth.DocumentPage =
 function(obj, ...)
-   dim(obj)[2]
+    dim(obj)[2]
+
+
+# The sapply is a method for Document so processes each page.
+# See lapply.R.
+getPageWidth.Document =
+function(obj, ...)
+    sapply(obj, getPageWidth, ...)
+
+getPageHeight.Document =
+function(obj, ...)
+    sapply(obj, getPageHeight, ...)
+
