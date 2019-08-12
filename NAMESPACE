@@ -36,6 +36,8 @@ S3method(dim, Document)
 export(getPageHeight, getPageWidth)
 S3method(getPageHeight, DocumentPage)
 S3method(getPageWidth, DocumentPage)
+S3method(getPageWidth, Document)
+S3method(getPageHeight, Document)
 
 if(FALSE) {
 S3method(margins, DocumentPage)
@@ -43,3 +45,8 @@ S3method(margins, Document)
 S3method(margins, TextBoundingBox)
 }
 
+
+
+#export(lapply, sapply)
+exportMethods(lapply)
+exportMethods(sapply)
