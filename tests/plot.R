@@ -13,6 +13,18 @@ if(require(ReadPDF)) {
  bb = getTextBBox(doc, asDataFrame = TRUE, combinePages = TRUE)
  class(bb)
  plot(bb)
+
+
+
+
+ plot(doc2[[1]], shapes = NULL, boxes = TRUE)
+ plot(doc2[[1]], shapes = NULL, boxes = TRUE, cex = .5)
+ plot(doc2[[1]], shapes = NULL, boxes = TRUE, cex = 1)
+ plot(doc2[[1]], shapes = NULL, boxes = TRUE, cex = I(.5))
+
+ o = getTextBBox(doc2[[1]], font = TRUE)
+ plot(o, shapes = NULL, cex = rep(.4, nrow(o)))
+
 }
 
 
@@ -20,6 +32,12 @@ if(require(Rtesseract)) {
     doc = OCRDocument("ScannedEgs/Ogunkoya-1990.pdf")
     plot(doc[[1]])
     plot(doc)
+
+
+    bb = getTextBBox(doc[[1]])
+    sh = getLines(doc[[1]], , 3)
+    plot(bb, shapes = sh)
+    selectMethod("plot", "OCRResults") 
 
 
 
