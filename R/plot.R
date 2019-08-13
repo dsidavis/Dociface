@@ -53,24 +53,58 @@ function(x, y, colors = getTextColors(x), axes = FALSE, shapes = getShapesBBox(x
     #?? Should this be
     #   getTextBBox(x, color = TRUE)
     # or
-    #  as(x, "TextBoundingBox")
+    #   as(x, "TextBoundingBox")
     # Or should getTextBBox() have color, rotation, pages, etc. all be TRUE.
     bb = as(x, "TextBoundingBox") # getTextBBox(x, color = TRUE)
     plot(bb, pageHeight =  getPageHeight(x), colors = colors, axes = axes, shapes = shapes, ...)
 })
 
 setMethod("plot", "TextBoundingBox",
-function(x, y, pageHeight = getPageHeight(x), colors = getTextColors(x), axes = FALSE, shapes = NULL, ...)
+function(x, y, pageHeight = getPageHeight(x), colors = getTextColors(x), axes = FALSE, shapes = NULL, boxes = FALSE, cex = .5, ...)
 {    
     plot(1, xlim = range(c(left(x), right(x))), ylim = range(0, pageHeight), ..., xlab = "", ylab = "", axes = axes)
     if(!axes)
-        box() # could do it uncoditionally.
-    
-    text(left(x), pageHeight - bottom(x), x$text, adj = 0, cex = .5, col = colors)
-    if(length(shapes))
+        box() # could do it unconditionally.
+
+    # Font information
+    # Handle Rotation
+
+    if(length(shapes) && !(is.logical(shapes) && !shapes))  # allow shapes = NULL or FALSE to turn off.
         plot(shapes, pageHeight = pageHeight)
+    
+    if(boxes)
+        rect( left(x), pageHeight - bottom(x), right(x), pageHeight - top(x), border = "gray")
+
+    # Scale the text.
+    # caller can put cex = I(value) to force that to be passed directly
+    # or can provide a vector for cex. Otherwise, if a scalar, that is scaled
+    # by the height.
+    if(!is(cex, "AsIs") && length(cex) == 1) {
+        if(all(is.na( h <- fontSize(x)))) # XXX do 
+            h = abs(bottom(x) - top(x))
+        
+        cex = cex *  (h-min(h))/diff(range(h))
+    }
+    
+    text(left(x), pageHeight - bottom(x), x$text, adj = c(0, 0), cex = cex, col = colors)
+
+
+    invisible()
 })
 
+
+setMethod("plot", "ShapeBoundingBox",
+plot.ShapeBoundingBox <- function(x, y, pageHeight = getPageHeight(x), colors = getTextColors(x), axes = FALSE, shapes = NULL, boxes = FALSE, cex = .75, ...)
+{
+    sapply(1:nrow(x),
+                function(i) {
+                     #at = xmlAttrs(lines[[i]])
+                     lines(x[i, c("x0", "x1")], pageHeight - x[i, c("y0", "y1")], col = x[i, "stroke"],
+                           lwd = max(1, as.numeric(x[i, "lineWidth"], na.rm = TRUE)),
+                           lty = 2)
+                })
+
+})
 
 # Generic and method for computing colors of the text elements so we can render
 # them appropriately when plotting.
@@ -107,6 +141,14 @@ function(obj, ...)
 getPageWidth.DocumentPage =
 function(obj, ...)
     dim(obj)[2]
+
+getPageHeight.TextBoundingBox =
+function(obj, ...)
+    attr(obj, "pageDimensions")[1]
+
+getPageWidth.TextBoundingBox =
+function(obj, ...)
+   attr(obj, "pageDimensions")[2]
 
 
 # The sapply is a method for Document so processes each page.
