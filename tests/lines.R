@@ -33,7 +33,5 @@ if(require(Rtesseract)) {
  br = findLineBreaks(bb, minInRun = 2)
  abline(v = br, col = "green")
  txt = unname(sapply(ll, function(x) paste(x$text, collapse = " "))) 
-
- 
 }
 

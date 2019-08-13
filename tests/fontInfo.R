@@ -7,4 +7,8 @@ if(require(ReadPDF)) {
     bb = getTextBBox(doc2[[1]])
     w = isBold(bb)
     table(w)
+
+    fontName(bb)
+
+    isItalic(bb)
 }
