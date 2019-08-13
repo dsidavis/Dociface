@@ -21,6 +21,10 @@ setClass("TextBoundingBox", contains = "BoundingBox")
 setClass("ShapeBoundingBox", contains = "BoundingBox")
 
 
+setClass("ProcessedDocument", contains = c("list", "Document"))
+setValidity("ProcessedDocument", function(object) all(sapply(object, is, "TextBoundingBox")))
+
+
 setGeneric("getTextBBox",
            function(obj, ...)
               standardGeneric("getTextBBox"))
@@ -33,6 +37,9 @@ setGeneric("getPages",
            function(doc, ...)
              standardGeneric("getPages"))
 
+setMethod("getPages", "ProcessedDocument",
+          function(doc, ...)
+            doc[])
 
 # Default method, but has to inherit from the Document class so doesn't apply to everything.
 # Will work for any specific Document class so does not need to be implemented, but
@@ -129,6 +136,11 @@ setMethod("left", "TextBoundingBox", function(x, ...) x$left)
 setMethod("top", "TextBoundingBox", function(x, ...) x$top)
 
 
+setMethod("left", "DocumentPage", function(x, ...) left(as(x, "TextBoundingBox")))
+setMethod("right", "DocumentPage", function(x, ...) right(as(x, "TextBoundingBox")))
+setMethod("top", "DocumentPage", function(x, ...) top(as(x, "TextBoundingBox")))
+setMethod("bottom", "DocumentPage", function(x, ...) bottom(as(x, "TextBoundingBox")))
+
 
 if(FALSE) {
 ###############
@@ -147,8 +159,22 @@ function(x)
   t(sapply(getPages(x), dim))
 
 
+setGeneric("isBold", function(x, ...) standardGeneric("isBold"))
+setMethod("isBold", "ANY", function(x, ...) rep(NA, length(x)))
+setMethod("isBold", "data.frame", function(x, ...) rep(NA, nrow(x)))
 
+setGeneric("isItalic", function(x, ...) standardGeneric("isBold"))
+setMethod("isItalic", "ANY", function(x, ...) rep(NA, length(x)))
+setMethod("isItalic", "data.frame", function(x, ...) rep(NA, nrow(x)))
+
+
+setGeneric("fontName", function(doc, ...) standardGeneric("fontName"))
+setMethod("fontName", "TextBoundingBox", function(doc, ...) doc$fontName)
+
+setGeneric("fontSize", function(doc, ...) standardGeneric("fontSize"))
+setMethod("fontSize", "TextBoundingBox", function(doc, ...) doc$fontSize)
 
 
 # Validity
 # 
+
