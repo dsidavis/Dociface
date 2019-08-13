@@ -48,21 +48,21 @@ function(x, y, axes = FALSE, mar = c(1, 1, 2, 1), ...)
 # Compute colors
 # pageTitle() function and default value.
 setMethod("plot", "DocumentPage",
-function(x, y, colors = getTextColors(x), axes = FALSE, shapes = getShapesBBox(x), ...)
+function(x, y, colors = getTextColors(x), axes = FALSE, shapes = getShapesBBox(x), bbox = as(x, "TextBoundingBox"), ...)
 {
     #?? Should this be
     #   getTextBBox(x, color = TRUE)
     # or
     #   as(x, "TextBoundingBox")
     # Or should getTextBBox() have color, rotation, pages, etc. all be TRUE.
-    bb = as(x, "TextBoundingBox") # getTextBBox(x, color = TRUE)
-    plot(bb, pageHeight =  getPageHeight(x), colors = colors, axes = axes, shapes = shapes, ...)
+    plot(bbox, pageHeight =  getPageHeight(x), colors = colors, axes = axes, shapes = shapes, ...)
 })
 
 setMethod("plot", "TextBoundingBox",
 function(x, y, pageHeight = getPageHeight(x), colors = getTextColors(x), axes = FALSE, shapes = NULL, boxes = FALSE, cex = .5, ...)
-{    
-    plot(1, xlim = range(c(left(x), right(x))), ylim = range(0, pageHeight), ..., xlab = "", ylab = "", axes = axes)
+{
+
+    plot(1, xlim = range(c(left(x), right(x))), ylim = range(0, pageHeight), ..., xlab = "", ylab = "", axes = axes, type = "n")
     if(!axes)
         box() # could do it unconditionally.
 
@@ -82,6 +82,8 @@ function(x, y, pageHeight = getPageHeight(x), colors = getTextColors(x), axes = 
     if(!is(cex, "AsIs") && length(cex) == 1) {
         if(all(is.na( h <- fontSize(x)))) # XXX do 
             h = abs(bottom(x) - top(x))
+        if(any(h > pageHeight*.3))
+            warning("large fonts")
         
         cex = cex *  (h-min(h))/diff(range(h))
     }
