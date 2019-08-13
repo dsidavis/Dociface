@@ -1,6 +1,8 @@
 exportClasses("Document", "DocumentPage")
 exportClasses("BoundingBox", "TextBoundingBox", "ShapeBoundingBox")
 
+exportClasses("ProcessedDocument")
+
 export(getNumPages, getTextBBox, getPages)
 
 exportMethods(getNumPages)
@@ -24,6 +26,7 @@ S3method(getColPositions, DocumentPage)
 
 exportMethods("plot")
 S3method(plot, MultiPageBoundingBox)
+#S3method(plot, ShapePageBoundingBox) - S4 method
 
 export(getTextColors)
 exportMethods(getTextColors)
@@ -39,6 +42,10 @@ S3method(getPageWidth, DocumentPage)
 S3method(getPageWidth, Document)
 S3method(getPageHeight, Document)
 
+
+S3method(getPageWidth, TextBoundingBox)
+S3method(getPageHeight, TextBoundingBox)
+
 if(FALSE) {
 S3method(margins, DocumentPage)
 S3method(margins, Document)
@@ -50,3 +57,12 @@ S3method(margins, TextBoundingBox)
 #export(lapply, sapply)
 exportMethods(lapply)
 exportMethods(sapply)
+
+
+export(isBold, isItalic)
+exportMethods(isBold, isItalic)
+
+
+export(fontName, fontSize)
+exportMethods(fontName, fontSize)
+
