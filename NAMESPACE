@@ -12,8 +12,8 @@ exportMethods(getNumPages)
 export(margins)
 exportMethods(margins)
 
-export(left, right, top, bottom, width, height)
-exportMethods(left, right, top, bottom)
+export(left, right, top, bottom, width, height, rotation)
+exportMethods(left, right, top, bottom, rotation)
 
 
 export(findLineBreaks, getTextLines)
@@ -65,4 +65,11 @@ exportMethods(isBold, isItalic)
 
 export(fontName, fontSize)
 exportMethods(fontName, fontSize)
+
+
+
+export(columnOf)
+
+
+export(getGroupings)
 

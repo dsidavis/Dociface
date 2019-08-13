@@ -1,3 +1,28 @@
+getGroupings =
+function(h, bw = 3, minInRun = 3, minDelta = 0)    
+{
+    dens = density(h, bw = bw)
+#plot(dens, type = "b")    
+
+      # Look at the change in the density. We are looking for the increasing parts of the curve
+      # where there are several points in a row that have increasing y so the difference is positive
+      #!!!!XXXX    bad variable d       delta = c(0, diff(d$y))   This caused me a long debug session.
+    delta = c(0, diff(dens$y))
+
+    runs = rle(delta >= minDelta)
+      # Get an group identifier for each observation in dens$x as to which run it is in.
+    g = rep(1:length(runs$length), runs$length)
+
+      # group the dens$x into the groups and then only keep this for which
+      # the change is > minDelta and also that the run has at least minInRun
+    grps = split(dens$x, g)
+    w = runs$values & runs$length >= minInRun
+    unname(sapply(grps[w], min))
+
+    #XXX Look at second derivative.
+    
+}
+
 findLineBreaks =
     #
     # This works reasonably well.
@@ -18,22 +43,7 @@ function(bbox, bw = 3, minInRun = 3, minDelta = 0, asPositions = TRUE)
       # based on the length of the "word", either as the width or nchar(bbox$text)
       #    h = rep(bbox$top + bbox$height, bbox$width)
     h = rep(bottom(bbox), width(bbox)) 
-    dens = density(h, bw = bw)
-
-      # Look at the change in the density. We are looking for the increasing parts of the curve
-      # where there are several points in a row that have increasing y so the difference is positive
-      #!!!!XXXX    bad variable d       delta = c(0, diff(d$y))   This caused me a long debug session.
-    delta = c(0, diff(dens$y))
-
-    runs = rle(delta >= minDelta)
-      # Get an group identifier for each observation in dens$x as to which run it is in.
-    g = rep(1:length(runs$length), runs$length)
-
-      # group the dens$x into the groups and then only keep this for which
-      # the change is > minDelta and also that the run has at least minInRun
-    grps = split(dens$x, g)
-    w = runs$values & runs$length >= minInRun
-    starts = unname(sapply(grps[w], min))
+    starts = getGroupings(h, bw, minInRun, minDelta)
 
     if(asPositions)
         starts
