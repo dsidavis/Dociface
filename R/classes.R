@@ -130,6 +130,7 @@ setGeneric("top", function(x, ...) standardGeneric("top"))
 setGeneric("bottom", function(x, ...) standardGeneric("bottom"))
 setGeneric("width", function(x, ...) standardGeneric("width"))
 setGeneric("height", function(x, ...) standardGeneric("height"))
+setGeneric("rotation", function(x, ...) standardGeneric("rotation"))
 
 # General as it works for OCR and PDF
 setMethod("left", "TextBoundingBox", function(x, ...) x$left)
@@ -140,6 +141,9 @@ setMethod("left", "DocumentPage", function(x, ...) left(as(x, "TextBoundingBox")
 setMethod("right", "DocumentPage", function(x, ...) right(as(x, "TextBoundingBox")))
 setMethod("top", "DocumentPage", function(x, ...) top(as(x, "TextBoundingBox")))
 setMethod("bottom", "DocumentPage", function(x, ...) bottom(as(x, "TextBoundingBox")))
+
+
+setMethod("rotation", "TextBoundingBox", function(x, ...) if("rotation" %in% names(x)) x$rotation else rep(0, nrow(x)))
 
 
 if(FALSE) {
@@ -163,7 +167,7 @@ setGeneric("isBold", function(x, ...) standardGeneric("isBold"))
 setMethod("isBold", "ANY", function(x, ...) rep(NA, length(x)))
 setMethod("isBold", "data.frame", function(x, ...) rep(NA, nrow(x)))
 
-setGeneric("isItalic", function(x, ...) standardGeneric("isBold"))
+setGeneric("isItalic", function(x, ...) standardGeneric("isItalic"))
 setMethod("isItalic", "ANY", function(x, ...) rep(NA, length(x)))
 setMethod("isItalic", "data.frame", function(x, ...) rep(NA, nrow(x)))
 
@@ -172,9 +176,53 @@ setGeneric("fontName", function(doc, ...) standardGeneric("fontName"))
 setMethod("fontName", "TextBoundingBox", function(doc, ...) doc$fontName)
 
 setGeneric("fontSize", function(doc, ...) standardGeneric("fontSize"))
-setMethod("fontSize", "TextBoundingBox", function(doc, ...) doc$fontSize)
+# or height
+setMethod("fontSize", "TextBoundingBox", function(doc, ...) if("fontSize" %in% names(doc)) doc$fontSize else height(doc))
+# rep(NA, nrow(doc)))
 
 
 # Validity
 # 
+
+
+
+
+
+
+setGeneric("columnOf",
+function(node, cols = getColPositions(xmlParent(node)), ...)
+           standardGeneric("columnOf"))
+
+
+
+setGeneric('getFilename', function(obj, ...) standardGeneric('getFilename'))
+setMethod('getFilename', "TextBoundingBox", function(obj, ...) attr(obj, "filename"))
+
+
+setAs("TextBoundingBox", "ShapeBoundingBox",
+        function(from)
+           getShapesBBox(getFilename(from)))
+
+
+
+setMethod("bottom", "ShapeBoundingBox", function(x, ...) x$x0)
+
+
+setGeneric("getDocFont", function(x, ...) standardGeneric("getDocFont"))
+
+
+getDocFont2 =
+function(x, dropRotation = TRUE, bbox = getTextBBox(x), ...)
+{
+    if(dropRotation && !(all( rotation(bbox) != 0)))
+       bbox = bbox[rotation(bbox) == 0, ]
+
+    tt = table(fontName(bbox))
+    nm = names(tt)[which.max(tt)]
+    bbox[ fontName(bbox) == nm, grepl("font", names(bbox))][1,]
+}
+
+
+setMethod("getDocFont", "Document", getDocFont2)
+setMethod("getDocFont", "DocumentPage", getDocFont2)
 
