@@ -7,7 +7,9 @@ stopifnot(identical(tmp, structure(list(left = 455L, top = 78, right = 481L, bot
 
 f = function(page, ...)
 {
-    pos = getPageWidth(page)/2
+#    pos = getPageWidth(page)/2
+    m = margins(page)
+    pos = m[1] + diff(m)/2
     tmp = findEmptyRegion(pos, getTextBBox(page), ...)
     if(nrow(tmp) > 0) {
         plot(page, shapes = NULL)
