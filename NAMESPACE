@@ -26,7 +26,7 @@ S3method(getColPositions, DocumentPage)
 
 exportMethods("plot")
 S3method(plot, MultiPageBoundingBox)
-#S3method(plot, ShapePageBoundingBox) - S4 method
+#S3method(plot, ShapeBoundingBox) #- S4 method
 
 export(getTextColors)
 exportMethods(getTextColors)
@@ -73,3 +73,5 @@ export(columnOf)
 
 export(getGroupings)
 
+export(getFilename)
+exportMethods(getFilename)
