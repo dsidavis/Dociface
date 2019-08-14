@@ -40,6 +40,24 @@ getHeaderPos =
     bb[w]
 }
 
+
+
+getPageFooter =
+function(page, bbox = getTextBBox(page), ignorePageNumber = TRUE)
+{
+    tops = top(bbox)
+    mx = max(tops, na.rm = TRUE)
+    w = tops == mx # Might need some wiggle room with OCR
+    ans = bbox$text[w][order(left(bbox)[w])]
+
+    ## We have some docs with E57 as a page number (de la Torre-2009)
+    if(length(ans) == 1 && (grepl("^[0-9]+$", ans) || grepl("Downloaded from", ans) || grepl("For +personal +use", ans) || (length(strsplit(ans, " +")[[1]]) == 1)))
+        getPageFooter(, bbox[!w,])
+    else
+        paste(ans, collapse = " ")
+}
+
+
 ## Moved from footer.R
 getFooterPos =
 function(page, docFont = getDocFont(page), 
