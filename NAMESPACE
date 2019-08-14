@@ -15,7 +15,6 @@ exportMethods(margins)
 export(left, right, top, bottom, width, height, rotation)
 exportMethods(left, right, top, bottom, rotation)
 
-
 export(findLineBreaks, getTextLines)
 
 export(getTextByCols)

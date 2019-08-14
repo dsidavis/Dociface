@@ -146,6 +146,13 @@ setMethod("bottom", "DocumentPage", function(x, ...) bottom(as(x, "TextBoundingB
 setMethod("rotation", "TextBoundingBox", function(x, ...) if("rotation" %in% names(x)) x$rotation else rep(0, nrow(x)))
 
 
+setMethod("left", "ShapeBoundingBox", function(x, ...) x$x0)
+setMethod("right", "ShapeBoundingBox", function(x, ...) x$x1)
+setMethod("top", "ShapeBoundingBox", function(x, ...) x$y0)
+setMethod("bottom", "ShapeBoundingBox", function(x, ...) x$y1)
+
+
+
 if(FALSE) {
 ###############
 # Put here when talking with Jane and Matt just to illustrate how we would write package
@@ -205,7 +212,7 @@ setAs("TextBoundingBox", "ShapeBoundingBox",
 
 
 
-setMethod("bottom", "ShapeBoundingBox", function(x, ...) x$x0)
+
 
 
 setGeneric("getDocFont", function(x, ...) standardGeneric("getDocFont"))
