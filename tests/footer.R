@@ -6,6 +6,12 @@ if(require(ReadPDF)){
     ll = getFooterPos(doc[[1]])
 
     hdr = getHeader(doc[[1]])
+
+    hdr = getHeader(doc)
+
+
+    ftr = getFooter(doc[[1]])
+    ftr = getFooter(doc)
     
 }
 

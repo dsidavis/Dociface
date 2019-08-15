@@ -21,12 +21,6 @@ getHeader.DocumentPage =
     bb[top(bb) == hdr_pos ,]
 }
 
-getPageHeader = function(page, bbox = getTextBBox(page), ignorePageNumber = TRUE)
-{
-    
-
-}
-
 getHeaderPos =
         
     function(bb, lineThreshold = 4, interlineThreshold = 2, ...)
@@ -47,6 +41,31 @@ getHeaderPos =
     mn
 }
 
+################################################################################
+## Footer - repeats a lot of the above, is there a better way to do this?
+
+getFooter =
+    function(obj, ...)
+{
+    UseMethod("getFooter")
+}
+
+
+getFooter.Document =
+
+    function(obj, ...)
+{
+    lapply(obj, getFooter, ...)
+}
+
+getFooter.DocumentPage =
+
+    function(obj, docFont = getDocFont(obj), 
+             bbox = getTextBBox(obj),  shapes = getShapesBBox(obj), ...)
+{
+    ftr_pos = getFooterPos(obj, docFont, bbox, shapes, ...) 
+    bbox[top(bbox) == ftr_pos ,]
+}
 
 
 getPageFooter =
@@ -84,5 +103,5 @@ getFooterPos =
         }
     }
     
-    NA
+    integer()
 }
