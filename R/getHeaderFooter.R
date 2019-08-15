@@ -7,17 +7,23 @@ getHeader =
 
 getHeader.Document =
 
-
     function(obj, lineThreshold = 4, interlineThreshold = 2, ...)
 {
     lapply(obj, getHeader, lineThreshold, interlineThreshold, ...)
 }
 
 getHeader.DocumentPage =
+
     function(obj, lineThreshold = 4, interlineThreshold = 2, ...)
 {
     bb = as(obj, "TextBoundingBox")
     getHeaderPos(bb, lineThreshold, interlineThreshold, ...)
+}
+
+getPageHeader = function(page, bbox = getTextBBox(page), ignorePageNumber = TRUE)
+{
+    
+
 }
 
 getHeaderPos =
@@ -60,17 +66,20 @@ function(page, bbox = getTextBBox(page), ignorePageNumber = TRUE)
 
 ## Moved from footer.R
 getFooterPos =
-function(page, docFont = getDocFont(page), 
-          bbox = getTextBBox(page),  shapes = getShapesBBox(page))
+    ## This works as intended, but is probably not the best algorithm
+    ## It relies on there being a line at the bottom of the page
+    ## We could extend this by looking for any text smaller than the document text
+    function(page, docFont = getDocFont(page), 
+             bbox = getTextBBox(page),  shapes = getShapesBBox(page))
 {
     if(nrow(shapes)) {
         
-        bottom = max(bottom(shapes))
-        # look for a line with all the text below it being smaller than the the document font.
-        nodes = bbox[top(bbox) > bottom, ]  #??? Is this > or <  - Have we got the right bottom/top
+        shape_bottom = max(bottom(shapes))
+        ## look for a line with all the text below it being smaller than the the document font.
+        nodes = bbox[top(bbox) > shape_bottom, ]  #This is the correct 
         if(nrow(nodes)) {
             if(all(fontSize(nodes) < fontSize(docFont)))  
-                return(bottom)
+                return(shape_bottom)
         }
     }
     
