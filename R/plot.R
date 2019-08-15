@@ -96,16 +96,41 @@ function(x, y, pageHeight = getPageHeight(x), colors = getTextColors(x), axes = 
 
 
 setMethod("plot", "ShapeBoundingBox",
-plot.ShapeBoundingBox <- function(x, y, pageHeight = getPageHeight(x), colors = getTextColors(x), axes = FALSE, shapes = NULL, boxes = FALSE, cex = .75, ...)
+plot.ShapeBoundingBox <- function(x, y, pageHeight = getPageHeight(x), colors = getTextColors(x), axes = FALSE, shapes = NULL, boxes = FALSE, cex = .75, lty = 1, ...)
 {
-    sapply(1:nrow(x),
-                function(i) {
-                     #at = xmlAttrs(lines[[i]])
-                     lines(x[i, c("x0", "x1")], pageHeight - x[i, c("y0", "y1")], col = x[i, "stroke"],
-                           lwd = max(1, as.numeric(x[i, "lineWidth"], na.rm = TRUE)),
-                           lty = 2)
-                })
 
+    bbox = x
+    ll = bbox[ bbox$nodeType == 'line', ]
+    w = is.na(x$lineWidth) | x$lineWidth < 1
+    x$lineWidth[w] = 1
+    
+    if(nrow(ll))
+    {
+        # do this for the line elements, and the rect's differently
+
+      n = nrow(ll)
+         # Put the lines into 2 columns of consecutive pairs of x's and y's and NA 
+      X = matrix(NA, 3*n - 1, 2)
+      i = seq(1, length = n, by = 3)
+      X[i,1] = left(ll)
+      X[i + 1,1] = right(ll)
+      X[i,2] = pageHeight - bottom(ll)
+      X[i + 1,2] = pageHeight - top(ll)
+      lines(X, col = ll[, "stroke"],
+             lwd = as.numeric(x[, "lineWidth"]),
+              lty = lty)    
+    }
+
+
+    rr = bbox[ bbox$nodeType == 'rect', ]
+    if(nrow(rr))
+    {
+          # do this for the line elements, and the rect's differently
+
+        rect(left(rr),  pageHeight - top(rr), right(rr),  pageHeight - bottom(rr),  border = ll[, "stroke"],
+             lwd =  as.numeric(x[, "lineWidth"]),
+             lty = lty)    
+    }    
 })
 
 # Generic and method for computing colors of the text elements so we can render
