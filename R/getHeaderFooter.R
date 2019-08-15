@@ -17,7 +17,8 @@ getHeader.DocumentPage =
     function(obj, lineThreshold = 4, interlineThreshold = 2, ...)
 {
     bb = as(obj, "TextBoundingBox")
-    getHeaderPos(bb, lineThreshold, interlineThreshold, ...)
+    hdr_pos = getHeaderPos(bb, lineThreshold, interlineThreshold, ...)
+    bb[top(bb) == hdr_pos ,]
 }
 
 getPageHeader = function(page, bbox = getTextBBox(page), ignorePageNumber = TRUE)
@@ -31,19 +32,19 @@ getHeaderPos =
     function(bb, lineThreshold = 4, interlineThreshold = 2, ...)
 {
     ## Calculate the top coords 1x
-    tops = top(bb)
-    mn = min(tops, na.rm = TRUE)
-    w = tops - mn <= lineThreshold
+    page_tops = top(bb)
+    mn = min(page_tops, na.rm = TRUE)
+    w = page_tops - mn <= lineThreshold
 
     ## Find how far the nodes are from the other nodes not within the threshold
     # If this is sufficiently large (relative to the size of the text), then this is
     # a header.
-    delta = min(tops - mn)
+    delta = min(page_tops[!w] - mn)
 
     if(delta < interlineThreshold)
-        return(character())
+        return(integer())
     
-    bb[w]
+    mn
 }
 
 
