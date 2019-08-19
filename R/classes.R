@@ -188,7 +188,9 @@ setMethod("fontName", "TextBoundingBox", function(doc, ...) doc$fontName)
 setGeneric("fontSize", function(doc, ...) standardGeneric("fontSize"))
 # or height
 setMethod("fontSize", "TextBoundingBox", function(doc, ...) if("fontSize" %in% names(doc)) doc$fontSize else height(doc))
-# rep(NA, nrow(doc)))
+setMethod("fontSize", "FontSpecInfo", function(doc, ...) doc$size)
+
+                                        # rep(NA, nrow(doc)))
 
 
 # Validity

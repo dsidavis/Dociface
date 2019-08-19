@@ -74,3 +74,9 @@ export(getGroupings)
 
 export(getFilename)
 exportMethods(getFilename)
+
+export(getHeader, getFooter)
+S3method(getHeader, Document)
+S3method(getHeader, DocumentPage)
+S3method(getFooter, Document)
+S3method(getFooter, DocumentPage)

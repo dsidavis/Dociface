@@ -7,17 +7,18 @@ getHeader =
 
 getHeader.Document =
 
-
     function(obj, lineThreshold = 4, interlineThreshold = 2, ...)
 {
     lapply(obj, getHeader, lineThreshold, interlineThreshold, ...)
 }
 
 getHeader.DocumentPage =
+
     function(obj, lineThreshold = 4, interlineThreshold = 2, ...)
 {
     bb = as(obj, "TextBoundingBox")
-    getHeaderPos(bb, lineThreshold, interlineThreshold, ...)
+    hdr_pos = getHeaderPos(bb, lineThreshold, interlineThreshold, ...)
+    bb[top(bb) == hdr_pos ,]
 }
 
 getHeaderPos =
@@ -25,21 +26,46 @@ getHeaderPos =
     function(bb, lineThreshold = 4, interlineThreshold = 2, ...)
 {
     ## Calculate the top coords 1x
-    tops = top(bb)
-    mn = min(tops, na.rm = TRUE)
-    w = tops - mn <= lineThreshold
+    page_tops = top(bb)
+    mn = min(page_tops, na.rm = TRUE)
+    w = page_tops - mn <= lineThreshold
 
     ## Find how far the nodes are from the other nodes not within the threshold
     # If this is sufficiently large (relative to the size of the text), then this is
     # a header.
-    delta = min(tops - mn)
+    delta = min(page_tops[!w] - mn)
 
     if(delta < interlineThreshold)
-        return(character())
+        return(integer())
     
-    bb[w]
+    mn
 }
 
+################################################################################
+## Footer - repeats a lot of the above, is there a better way to do this?
+
+getFooter =
+    function(obj, ...)
+{
+    UseMethod("getFooter")
+}
+
+
+getFooter.Document =
+
+    function(obj, ...)
+{
+    lapply(obj, getFooter, ...)
+}
+
+getFooter.DocumentPage =
+
+    function(obj, docFont = getDocFont(obj), 
+             bbox = getTextBBox(obj),  shapes = getShapesBBox(obj), ...)
+{
+    ftr_pos = getFooterPos(obj, docFont, bbox, shapes, ...) 
+    bbox[top(bbox) == ftr_pos ,]
+}
 
 
 getPageFooter =
@@ -64,20 +90,23 @@ getFooterPos =
     #  page is the DocumentPage object.
     #  bbox is the bounding box of the individual elements in the page
     #
+    ## This works as intended, but is probably not the best algorithm
+    ## It relies on there being a line at the bottom of the page
+    ## We could extend this by looking for any text smaller than the document text    
     #
 function(page, docFont = getDocFont(page), 
           bbox = getTextBBox(page), shapes = getShapesBBox(page))
 {
     if(nrow(shapes)) {
         
-        bottom = max(bottom(shapes))
-        # look for a line with all the text below it being smaller than the the document font.
-        nodes = bbox[top(bbox) > bottom, ]  #??? Is this > or <  - Have we got the right bottom/top
+        shape_bottom = max(bottom(shapes))
+        ## look for a line with all the text below it being smaller than the the document font.
+        nodes = bbox[top(bbox) > shape_bottom, ]  #This is the correct 
         if(nrow(nodes)) {
             if(all(fontSize(nodes) < fontSize(docFont)))  
-                return(bottom)
+                return(shape_bottom)
         }
     }
     
-    NA
+    integer()
 }
