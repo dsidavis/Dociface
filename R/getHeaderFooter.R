@@ -60,8 +60,13 @@ function(page, bbox = getTextBBox(page), ignorePageNumber = TRUE)
 
 ## Moved from footer.R
 getFooterPos =
+    #
+    #  page is the DocumentPage object.
+    #  bbox is the bounding box of the individual elements in the page
+    #
+    #
 function(page, docFont = getDocFont(page), 
-          bbox = getTextBBox(page),  shapes = getShapesBBox(page))
+          bbox = getTextBBox(page), shapes = getShapesBBox(page))
 {
     if(nrow(shapes)) {
         
