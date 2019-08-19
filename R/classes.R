@@ -152,6 +152,9 @@ setMethod("top", "ShapeBoundingBox", function(x, ...) x$y0)
 setMethod("bottom", "ShapeBoundingBox", function(x, ...) x$y1)
 
 
+setMethod("height", "DocumentPage", function(x, ...) getPageHeight(x))
+setMethod("width", "DocumentPage", function(x, ...) getPageWidth(x))
+
 
 if(FALSE) {
 ###############
