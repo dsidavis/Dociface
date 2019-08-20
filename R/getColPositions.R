@@ -1,8 +1,3 @@
-
-
-
-
-
 #  txtNodes = getNodeSet(p, getXPathDocFontQuery(p, docFont, local = local)),
 
 getColPositions =
@@ -145,7 +140,6 @@ getColPositions2 =
     # 
 function(obj, threshold = .1, docFont = TRUE, align = "left", local = FALSE, ncols = 3, pageWidth = getPageWidth(obj), ...)
 {
-
     pos = switch(ncols, min(left(obj)), pageWidth/2, pageWidth*c(.33, .66))
 
     sapply(pos, isTextColumn, obj, pageWidth)
@@ -159,6 +153,25 @@ function(bbox)
     (right(bbox) - left(bbox))/nchar(bbox$text)
 }
 
+lineCrossesPos =
+function(pos, bbox, minNumChars = 3,            
+         charSize = median(getCharSize(bbox)),
+         delta = minNumChars/2*charSize)
+{
+   x = bbox    
+    #   w = left(bbox) < (pos - delta)  &  right(bbox) > (pos + delta)
+   w = (left(bbox) < (pos - delta) & right(bbox) > (pos + delta)) | (right(x) < pos & right(x) > (pos - delta)) | ( (left(x) > pos) & left(x) < (pos + delta)) 
+   return(w)
+   
+    if(any(w))
+        return(c(a =TRUE))
+    
+
+#   any( (right(x) < pos & right(x) < (pos - delta)) | ( (left(x) > pos) & left(x) < (pos + delta)) )
+
+   any( (right(x) < pos & right(x) > (pos - delta)) | ( (left(x) > pos) & left(x) < (pos + delta)) )
+}
+
 findEmptyRegion =
     #
     #
@@ -167,7 +180,8 @@ findEmptyRegion =
 function(pos, bbox, lineBreaks = findLineBreaks(bbox), range = c(0, Inf),
          minNumChars = 3,            
          charSize = median(getCharSize(bbox)),
-         minNumLines = 3, numLines = -1)
+         minNumLines = 3, numLines = -1,
+         delta = minNumChars/2*charSize)
 {
 
     #??? It is possible that we have a line where the word/element boundaries don't overlap with pos exactly
@@ -178,10 +192,16 @@ function(pos, bbox, lineBreaks = findLineBreaks(bbox), range = c(0, Inf),
       # Help to rule out text that is very, very close to pos that will indicate pos can't be a column location.
       # So we need space for minNumChars/2 characters on either size of pos. And we have charSize to determine
       # the size of a typical character.
-    delta = minNumChars/2*charSize
-    cross = left(bbox) < (pos - delta)  &  right(bbox) > (pos + delta)
 
-browser()    
+    
+    #!orig
+#XXX not quite right and same below in computing w =    
+    cross = left(bbox) < (pos - delta)  &  right(bbox) > (pos + delta)
+#    cross = lineCrossesPos(pos, bbox, delta = delta)
+    
+#        cross = right(bbox) < (pos - delta)  &  left(bbox) > (pos + delta)
+
+#browser()    
     
     if(length(range) == 0) # when called recursively where we have a sub-bounding box.
         range = c(min(top(bbox)), max(bottom(bbox)))
@@ -226,6 +246,7 @@ if(FALSE) {
 } else {
    # Alternative developed when Klempa-2003.pdf[[3]] got into an infinite loop.
     w = sapply(ll, function(x) any( left(x) < (pos - delta) & right(x) > (pos + delta)))
+#    w = sapply(ll, function(x) any(lineCrossesPos(pos, x, delta = delta)))
 #    w2 = sapply(ll, function(x) any( (right(x) < pos & right(x) < (pos - delta)) | ( (left(x) > pos) & left(x) < (pos + delta))))
     r = rle(w)
     g = split(ll, rep(seq(along = r$values), r$lengths))[!r$values]
@@ -274,8 +295,10 @@ if(FALSE) {
     structure(data.frame(left = hor[1], top = vert[1], right = hor[2], bottom = vert[2], numLines = numLines), class = c("EmptyRegion", "BoundingBox", "data.frame"))
 }
 
-ee = function(page, ncols = 2, ...) {
-  findEmptyRegion(getPageWidth(page)/ncols, getTextBBox(page), ...)
+ee = function(page, ncols = 2, margins = margins(page), ...) {
+    # coerce to BoundingBox first to avoid computing bbox multiple (2) times.
+   pos = margins[1] + diff(margins)/ncols
+   findEmptyRegion(pos, getTextBBox(page), ...)
 }
 
 isTextColumn =
