@@ -5,12 +5,12 @@ wd = getPageWidth(doc2)
 tmp = findEmptyRegion(wd[2]/2, getTextBBox(doc2[[2]]))
 stopifnot(identical(tmp, structure(list(left = 455L, top = 78, right = 481L, bottom = Inf), class = "data.frame", row.names = "left")))
 
-f = function(page, ...)
+f = function(page, bbox = getTextBBox(page), ...)
 {
 #    pos = getPageWidth(page)/2
-    m = margins(page)
+    m = margins(bbox) #page)
     pos = m[1] + diff(m)/2
-    tmp = findEmptyRegion(pos, getTextBBox(page), ...)
+    tmp = Dociface:::findEmptyRegion(pos, bbox, ...)
     if(nrow(tmp) > 0) {
         plot(page, shapes = NULL)
         abline(v = pos, col = "red")            
