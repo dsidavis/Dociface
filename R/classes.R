@@ -221,8 +221,13 @@ setAs("TextBoundingBox", "ShapeBoundingBox",
 
 
 setGeneric("getDocFont", function(x, ...) standardGeneric("getDocFont"))
+setGeneric("getFontInfo", function(x, ...) standardGeneric("getFontInfo"))
+
+setOldClass(c("FontSpecInfo", "data.frame"))
+setMethod("fontSize", "FontSpecInfo", function(doc, ...) doc$fontSize)
 
 
+if(FALSE) {
 getDocFont2 =
 function(x, dropRotation = TRUE, bbox = getTextBBox(x), ...)
 {
@@ -237,4 +242,11 @@ function(x, dropRotation = TRUE, bbox = getTextBBox(x), ...)
 
 setMethod("getDocFont", "Document", getDocFont2)
 setMethod("getDocFont", "DocumentPage", getDocFont2)
+} else {
 
+tmp = function(x, ...) {
+    getDocFont(getTextBBox(x), ...)
+}
+setMethod("getDocFont", "Document", tmp)
+setMethod("getDocFont", "DocumentPage", tmp)
+}

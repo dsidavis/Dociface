@@ -8,6 +8,9 @@ export(getNumPages, getTextBBox, getPages)
 exportMethods(getNumPages)
 
 
+export(getDocFont, getFontInfo)
+exportMethods(getDocFont, getFontInfo)
+
 
 export(margins)
 exportMethods(margins)
