@@ -59,9 +59,8 @@ getFooter.Document =
 }
 
 getFooter.DocumentPage =
-
-    function(obj, docFont = getDocFont(obj), 
-             bbox = getTextBBox(obj),  shapes = getShapesBBox(obj), ...)
+function(obj, docFont = getDocFont(obj), 
+          bbox = getTextBBox(obj),  shapes = getShapesBBox(obj), ...)
 {
     ftr_pos = getFooterPos(obj, docFont, bbox, shapes, ...) 
     bbox[top(bbox) == ftr_pos ,]
@@ -98,10 +97,9 @@ function(page, docFont = getDocFont(page),
           bbox = getTextBBox(page), shapes = getShapesBBox(page))
 {
     if(nrow(shapes)) {
-        
         shape_bottom = max(bottom(shapes))
         ## look for a line with all the text below it being smaller than the the document font.
-        nodes = bbox[top(bbox) > shape_bottom, ]  #This is the correct 
+        nodes = bbox[top(bbox) > shape_bottom, ]  # This is the correct 
         if(nrow(nodes)) {
             if(all(fontSize(nodes) < fontSize(docFont)))  
                 return(shape_bottom)
