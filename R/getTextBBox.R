@@ -46,6 +46,7 @@ function(pageFun, pages, asDataFrame = FALSE, combinePages = asDataFrame, ...)
         ans
 }
 
+#XXX fix the signature.
 getTextBBox.Document =
 function(obj, asDataFrame = TRUE, color = TRUE, diffs = FALSE, dropCropMarks = TRUE, ...)    
     bboxForDoc(getTextBBox, getPages(obj), asDataFrame, color = color, diffs = diffs, dropCropMarks = dropCropMarks, ...)

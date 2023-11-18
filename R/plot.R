@@ -103,8 +103,11 @@ plot.ShapeBoundingBox <- function(x, y, pageHeight = getPageHeight(x), colors = 
     ll = bbox[ bbox$nodeType == 'line', ]
     w = is.na(x$lineWidth) | x$lineWidth < 1
     x$lineWidth[w] = 1
-    
-    if(nrow(ll))
+
+    opar = par(no.readonly = TRUE)
+    on.exit(par(opar))
+    par(lend = "square")
+    if(FALSE && nrow(ll))
     {
         # do this for the line elements, and the rect's differently
 
@@ -116,20 +119,21 @@ plot.ShapeBoundingBox <- function(x, y, pageHeight = getPageHeight(x), colors = 
       X[i + 1,1] = right(ll)
       X[i,2] = pageHeight - bottom(ll)
       X[i + 1,2] = pageHeight - top(ll)
-      lines(X, col = ll[, "stroke"],
-             lwd = as.numeric(x[, "lineWidth"]),
-              lty = lty)    
+      lwd = rep(NA, 3*n - 1)
+      lwd[c(i, i+1)] = as.numeric(ll[, "lineWidth"])
+#browser()      
+      lines(X, col = ll[, "stroke"], lwd = lwd, lty = lty, lend = "square")    
     }
 
 
-    rr = bbox[ bbox$nodeType == 'rect', ]
+    rr = bbox[ bbox$nodeType %in% c('line', 'rect', 'img'), ]
     if(nrow(rr))
     {
           # do this for the line elements, and the rect's differently
 
         rect(left(rr),  pageHeight - top(rr), right(rr),  pageHeight - bottom(rr),  border = ll[, "stroke"],
              lwd =  as.numeric(x[, "lineWidth"]),
-             lty = lty)    
+             lty = lty, lend = "square")    
     }    
 })
 
